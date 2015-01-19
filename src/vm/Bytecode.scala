@@ -16,4 +16,37 @@ object Bytecode {
   val PRINT:    Short = 14
   val POP:      Short = 15
   val HALT:     Short = 16
+  
+  class Instruction(name: String, n_args: Int) {
+    val n: Int = n_args
+    override def toString = name
+    def this(name: String) = {
+      this(name, 0)
+    }
+  }
+  
+  val opcodes: List[Instruction] = {
+    List(null,
+    new Instruction("iadd", 2),
+    new Instruction("isub", 2),
+    new Instruction("imul", 2),
+    new Instruction("ilt"),
+    new Instruction("ieq"),
+    new Instruction("br", 1),
+    new Instruction("brt", 1),
+    new Instruction("brf", 1),
+    new Instruction("iconst", 1),
+    new Instruction("load", 1),
+    new Instruction("gload", 1),
+    new Instruction("store", 1),
+    new Instruction("gstore", 1),
+    new Instruction("print"),
+    new Instruction("pop"),
+    new Instruction("halt")
+    )
+  }
+  
+  
+  
+  
 }
