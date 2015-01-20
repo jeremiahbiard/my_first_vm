@@ -7,16 +7,10 @@ import vm.Bytecode.Instruction
 object VM {
 }
   
+class VM(program: List[Int], main: Int, datasize: Int) {
 
-class VM() {
-  def push(data: Int, sp: Int, stack: Array[Int]) = {
-    stack(sp) = data
-  }
-  
-  def pop(sp: Int, stack: Array[Int]): Int = {
-    stack(sp)
-  }
-  
+   val TRUE: Int = 1
+   val FALSE: Int = -1
    def disassemble(program: List[Int], opcode: Instruction, ip: Int, sp: Int, stack: Array[Int]) = {
        // Print the current instruction address, opcode, and arguments
         printf("%04d: %s", ip, opcode)
@@ -37,8 +31,7 @@ class VM() {
   def cpu(program: List[Int], ip: Int, sp: Int, stack: Array[Int]): Unit = {
     
     if (ip > program.length) return else {
-    
-      // val trace: Boolean = true
+      
       val trace: Boolean = true
       val opcode: Int = program(ip)
       val instr: Instruction = Bytecode.opcodes(opcode)
@@ -49,7 +42,7 @@ class VM() {
           val new_ip = ip + 1
           val b = stack(sp)
           val a = stack(new_sp)
-          stack(new_sp) = b + a
+          stack(new_sp) = a + b
           if (trace) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
         case ISUB =>
@@ -57,7 +50,47 @@ class VM() {
           val new_ip = ip + 1
           val b = stack(sp)
           val a = stack(new_sp)
-          stack(new_sp) = b - a
+          stack(new_sp) = a - b
+          if (trace) disassemble(program, instr, ip, new_sp, stack)
+          cpu(program, new_ip, new_sp, stack)
+        case IMUL =>
+          val new_sp = sp - 1
+          val new_ip = ip + 1
+          val b = stack(sp)
+          val a = stack(new_sp)
+          stack(new_sp) = a * b
+          if (trace) disassemble(program, instr, ip, new_sp, stack)
+          cpu(program, new_ip, new_sp, stack)
+        case ILT =>
+          val new_ip = ip + 1
+          val new_sp = sp - 1
+          val b = stack(sp)
+          val a = stack(new_sp)
+          stack(new_sp) = if (a < b) TRUE else FALSE
+          if (trace) disassemble(program, instr, ip, new_sp, stack)
+          cpu(program, new_ip, new_sp, stack)
+        case IEQ =>
+          val new_ip = ip + 1
+          val new_sp = sp - 1
+          val b = stack(sp)
+          val a = stack(new_sp)
+          stack(new_sp) = if (a == b) TRUE else FALSE
+          if (trace) disassemble(program, instr, ip, new_sp, stack)
+          cpu(program, new_ip, new_sp, stack)
+        case BR =>
+          val new_ip = program(ip + 1)
+          if (trace) disassemble(program, instr, ip, sp, stack)
+          cpu(program, new_ip, sp, stack)
+        case BRT =>
+          val addr = program(ip + 1)
+          val new_sp = sp - 1
+          if (stack(sp) == TRUE) cpu(program, addr, new_sp, stack) else
+            cpu(program, ip + 1, new_sp, stack)
+        case BRF =>
+          val addr = program(ip + 1)
+          val new_sp = sp - 1
+          if (stack(sp) == FALSE) cpu(program, addr, new_sp, stack) else
+            cpu(program, ip + 1, new_sp, stack)
         case ICONST =>
           val new_sp = sp + 1
           val data_addr = ip + 1
@@ -65,92 +98,22 @@ class VM() {
           stack(new_sp) = program(data_addr)
           if (trace) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
+        case LOAD =>
+        case GLOAD =>
+        case STORE =>
+        case GSTORE =>
         case PRINT =>
           println(stack(sp))
           val new_sp = sp - 1
           val new_ip = ip + 1
           if (trace) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
+        case POP =>
         case HALT =>
           if (trace) disassemble(program, instr, ip, sp, stack)
           println("Program execution halted.")
         case _ => println("BARF")
-      }
-      
-       
-        
+      }        
     }
   }
 }
-
-/*
- class VM(code: List[Int], main: Int, dataSize: Int) {
-  val trace: Boolean = true
-  private var stack: Array[Int] = new Array(100: Int)
-  private var data: Array[Int] = Array(dataSize: Int)
- 
-  var sp: Int = -1
-  var ip: Int = main
-  
-  def cpu(program: List[Int]): Unit = {
-    
-    // println(opcode)
-
-    while (ip < program.length) {
-      var opcode:Int = program(ip)
-      var instr: Instruction = Bytecode.opcodes(opcode)
-      if (trace) disassemble(instr)
-      
-
-      opcode match {
-        case IADD =>
-          ip += 1
-          val reg_a: Int = program(ip)
-          ip += 1
-          val reg_b: Int = program(ip)
-          sp += 1
-          stack(sp) = reg_a + reg_b
-        case ISUB =>
-          ip += 1
-          val reg_a: Int = program(ip)
-          ip += 1
-          val reg_b: Int = program(ip)
-          sp += 1
-          stack(sp) = reg_a - reg_b
-        case IMUL =>
-          ip += 1
-          val reg_a: Int = program(ip)
-          ip += 1
-          val reg_b: Int = program(ip)
-          sp += 1
-          stack(sp) = reg_a * reg_b
-        case ICONST =>
-          ip += 1
-          sp += 1
-          stack(sp) = program(ip)
-        case PRINT =>
-          printf("%d\n", stack(sp))
-          sp -= 1
-        case HALT => 
-          print("Execution halted.\n")
-          return
-      }     
-      
-      ip += 1
-    }
-    
-    def disassemble(opcode: Instruction) = {
-        printf("%04d: %s", ip, opcode)
-        opcode.n match {
-          case 1 =>
-            printf(" %d", program(ip + 1))
-          case 2 =>
-            printf(" %d, %d", program(ip + 1), program(ip + 2))
-          case _ => ""
-        } 
-        printf("\n")
-    }
-    
-  }
-}
-*/
