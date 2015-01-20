@@ -27,9 +27,9 @@ object Bytecode {
   
   val opcodes: List[Instruction] = {
     List(null,
-    new Instruction("iadd", 2),
-    new Instruction("isub", 2),
-    new Instruction("imul", 2),
+    new Instruction("iadd"),
+    new Instruction("isub"),
+    new Instruction("imul"),
     new Instruction("ilt"),
     new Instruction("ieq"),
     new Instruction("br", 1),
