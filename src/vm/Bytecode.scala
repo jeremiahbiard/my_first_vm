@@ -45,7 +45,7 @@ object Bytecode {
     new Instruction("print"),
     new Instruction("pop"),
     new Instruction("halt"),
-    new Instruction("call"),
+    new Instruction("call", 2),
     new Instruction("ret")
     )
   }

@@ -14,7 +14,7 @@ class VM(program: List[Int], main: Int, datasize: Int) {
    val TRUE: Int = 1
    val FALSE: Int = -1
    
-   var fp: Int = 0              // frame pointer
+   var fp: Int = -1              // frame pointer
    var stack: Array[Int] = new Array[Int](100)
    var global_register: Array[Int] = new Array[Int](datasize)
    
@@ -75,7 +75,7 @@ class VM(program: List[Int], main: Int, datasize: Int) {
           val new_ip = ip + 1
           val new_sp = sp - 1
           val b = stack(sp)
-          val a = stack(new_sp)
+          val a = stack(sp - 1)
           stack(new_sp) = if (a < b) TRUE else FALSE
           if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
@@ -93,14 +93,18 @@ class VM(program: List[Int], main: Int, datasize: Int) {
           cpu(program, new_ip, sp, stack)
         case BRT =>
           val addr = program(ip + 1)
+          val new_ip = ip + 2
           val new_sp = sp - 1
+          if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           if (stack(sp) == TRUE) cpu(program, addr, new_sp, stack) else
-            cpu(program, ip + 1, new_sp, stack)
+            cpu(program, new_ip, new_sp, stack)
         case BRF =>
           val addr = program(ip + 1)
+          val new_ip = ip + 2
           val new_sp = sp - 1
+          if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           if (stack(sp) == FALSE) cpu(program, addr, new_sp, stack) else
-            cpu(program, ip + 1, new_sp, stack)
+          cpu(program, new_ip, new_sp, stack)
         case ICONST =>
           val new_sp = sp + 1
           val data_addr = ip + 1
@@ -112,7 +116,6 @@ class VM(program: List[Int], main: Int, datasize: Int) {
           val offset = program(ip + 1)
           val new_ip = ip + 2
           val new_sp = sp + 1
-          println(fp + offset)
           stack(new_sp) = stack(fp + offset)
           if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
@@ -150,21 +153,22 @@ class VM(program: List[Int], main: Int, datasize: Int) {
           val addr = program(ip + 1)          // target addr of function
           val nargs = program(ip + 2)
           val new_sp = sp + 3 // how many args got pushed
-          println(addr, nargs)
           stack(sp + 1) = nargs               // save num args
           stack(sp + 2) = fp                  // save function pointer
-          stack(sp + 3) = ip                  // push return address
+          stack(sp + 3) = ip + 3              // push return address
           fp = new_sp                        // fp points to return addr on stack
+          if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, addr, new_sp, stack)
           // code preamble of func must push space for locals
         case RET =>
           val rvalue = stack(sp)              // pop return value
           val temp_sp = fp                    // jump over locals to fp
-          val new_ip = stack(temp_sp - 1)          // pop return address and jump
-          fp = stack(temp_sp - 2)                  // restore fp
-          val nargs = stack(temp_sp - 3)            // how many args to throw asay
-          val new_sp = temp_sp - nargs
-          stack(new_sp + 1) = rvalue           // leave result on stack
+          val new_ip = stack(sp - 1)          // pop return address and jump
+          fp = stack(sp - 2)                  // restore fp
+          val nargs = stack(sp - 3)            // how many args to throw asay
+          val new_sp = temp_sp - nargs - 2
+          stack(new_sp + 1)  // leave result on stack
+          if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
         case _ => throw new Error("invalid opcode: " + opcode + " at ip: "+ ip + ".")
       }        
