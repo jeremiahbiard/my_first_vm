@@ -10,11 +10,13 @@ object VM {
 class VM(program: List[Int], main: Int, datasize: Int) {
 
    var TRACE: Boolean = false
+   
    val TRUE: Int = 1
    val FALSE: Int = -1
    
-   var stack = new Array[Int](10)
-   var global_register = new Array[Int](datasize)
+   var fp: Int = 0              // frame pointer
+   var stack: Array[Int] = new Array[Int](100)
+   var global_register: Array[Int] = new Array[Int](datasize)
    
    def exec(): Unit = {
      cpu(program, main, -1, stack)
@@ -107,6 +109,13 @@ class VM(program: List[Int], main: Int, datasize: Int) {
           if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
         case LOAD =>
+          val offset = program(ip + 1)
+          val new_ip = ip + 2
+          val new_sp = sp + 1
+          println(fp + offset)
+          stack(new_sp) = stack(fp + offset)
+          if (TRACE) disassemble(program, instr, ip, new_sp, stack)
+          cpu(program, new_ip, new_sp, stack)
         case GLOAD =>
           val addr = program(ip + 1)
           val new_sp = sp + 1
@@ -129,10 +138,35 @@ class VM(program: List[Int], main: Int, datasize: Int) {
           if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
         case POP =>
+          val new_sp = sp - 1
+          val new_ip = ip + 1
+          if (TRACE) disassemble(program, instr, ip, new_sp, stack)
+          cpu(program, new_ip, new_sp, stack)
         case HALT =>
           if (TRACE) disassemble(program, instr, ip, sp, stack)
           println("Program execution halted.")
-        case _ => println("BARF")
+        case CALL =>
+          // expects all args on stack
+          val addr = program(ip + 1)          // target addr of function
+          val nargs = program(ip + 2)
+          val new_sp = sp + 3 // how many args got pushed
+          println(addr, nargs)
+          stack(sp + 1) = nargs               // save num args
+          stack(sp + 2) = fp                  // save function pointer
+          stack(sp + 3) = ip                  // push return address
+          fp = new_sp                        // fp points to return addr on stack
+          cpu(program, addr, new_sp, stack)
+          // code preamble of func must push space for locals
+        case RET =>
+          val rvalue = stack(sp)              // pop return value
+          val temp_sp = fp                    // jump over locals to fp
+          val new_ip = stack(temp_sp - 1)          // pop return address and jump
+          fp = stack(temp_sp - 2)                  // restore fp
+          val nargs = stack(temp_sp - 3)            // how many args to throw asay
+          val new_sp = temp_sp - nargs
+          stack(new_sp + 1) = rvalue           // leave result on stack
+          cpu(program, new_ip, new_sp, stack)
+        case _ => throw new Error("invalid opcode: " + opcode + " at ip: "+ ip + ".")
       }        
     }
   }

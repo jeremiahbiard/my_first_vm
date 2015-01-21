@@ -16,6 +16,8 @@ object Bytecode {
   val PRINT:    Short = 14
   val POP:      Short = 15
   val HALT:     Short = 16
+  val CALL:     Short = 17
+  val RET:      Short = 18
   
   class Instruction(name: String, n_args: Int) {
     val n: Int = n_args
@@ -42,7 +44,9 @@ object Bytecode {
     new Instruction("gstore", 1),
     new Instruction("print"),
     new Instruction("pop"),
-    new Instruction("halt")
+    new Instruction("halt"),
+    new Instruction("call"),
+    new Instruction("ret")
     )
   }
   
