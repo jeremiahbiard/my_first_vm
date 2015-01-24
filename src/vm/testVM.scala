@@ -38,6 +38,7 @@ object testVM {
       HALT
       )
       
+  val fact: Int = 5
   val factorial: List[Int] = List(
       //.def fact: ARGS=1, LOCALS=0        ADDRESS
       //  IF n < 2 RETURN 1
@@ -60,7 +61,7 @@ object testVM {
           
       //.DEF MAIN: ARGS=0, LOCALS=0
       // PRINT FACT(10)
-          ICONST, 1,                // 22 <-- Main method
+          ICONST, 5,                // 22 <-- Main method
           CALL, 0, 1,              //  24
           PRINT,                    // 27
           HALT                      // 28
@@ -69,8 +70,9 @@ object testVM {
     
     val datasize: Int = 1
     val main = 0
-    //val vm = new VM(factorial, 22, 0)
-    val vm = new VM(loop, 0, 2)
+    val vm = new VM(factorial, 22, 0)
+    // val vm = new VM(test_mul, 0, 0)
+    // val vm = new VM(loop, 0, 2)
     vm.TRACE = true
     vm.exec()
     

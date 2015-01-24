@@ -167,7 +167,7 @@ class VM(program: List[Int], main: Int, datasize: Int) {
           fp = stack(sp - 2)                  // restore fp
           val nargs = stack(sp - 3)            // how many args to throw asay
           val new_sp = temp_sp - nargs - 2
-          stack(new_sp + 1)  // leave result on stack
+          stack(new_sp) = rvalue // leave result on stack
           if (TRACE) disassemble(program, instr, ip, new_sp, stack)
           cpu(program, new_ip, new_sp, stack)
         case _ => throw new Error("invalid opcode: " + opcode + " at ip: "+ ip + ".")
