@@ -45,6 +45,7 @@ class VM(main: Int, datasize: Int) {
                Integer.valueOf(head) :: lex(rest) 
              }
              catch {
+               // Ignore anything that isn't an opcode or a number
                case _ : Throwable => lex(rest)
              }
            }

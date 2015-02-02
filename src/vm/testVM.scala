@@ -44,15 +44,10 @@ object testVM {
     
     val datasize: Int = 1
     val main = 0
-    // val vm = new VM(factorial, 22, 0)
-    // val vm = new VM(test_mul, 0, 0)
-    // val vm = new VM(loop, 0, 2)
-    
     
     val vm = new VM(22, 0)
     val program = vm.load("src/vm/fact.txt")
-    println(program)
-    vm.TRACE = true
+    vm.TRACE = false
     vm.exec(program)
     
     
