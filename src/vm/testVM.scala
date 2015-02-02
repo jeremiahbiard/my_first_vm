@@ -61,7 +61,7 @@ object testVM {
           
       //.DEF MAIN: ARGS=0, LOCALS=0
       // PRINT FACT(10)
-          ICONST, 5,                // 22 <-- Main method
+          ICONST, fact,                // 22 <-- Main method
           CALL, 0, 1,              //  24
           PRINT,                    // 27
           HALT                      // 28
@@ -70,11 +70,15 @@ object testVM {
     
     val datasize: Int = 1
     val main = 0
-    val vm = new VM(factorial, 22, 0)
+    // val vm = new VM(factorial, 22, 0)
     // val vm = new VM(test_mul, 0, 0)
     // val vm = new VM(loop, 0, 2)
-    vm.TRACE = true
-    vm.exec()
+    
+    
+    val vm = new VM(0, 0)
+    val program = vm.load("src/vm/fact.txt")
+    vm.TRACE = false
+    vm.exec(program)
     
     
 

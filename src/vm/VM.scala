@@ -2,12 +2,13 @@ package vm
 
 import vm.Bytecode._
 import vm.Bytecode.Instruction
-
+import scala.io.Source
+import scala.collection.mutable.ListBuffer
 
 object VM {
 }
   
-class VM(program: List[Int], main: Int, datasize: Int) {
+class VM(main: Int, datasize: Int) {
 
    var TRACE: Boolean = false
    
@@ -15,10 +16,36 @@ class VM(program: List[Int], main: Int, datasize: Int) {
    val FALSE: Int = -1
    
    var fp: Int = -1              // frame pointer
-   var stack: Array[Int] = new Array[Int](100)
+   var stack: Array[Int] = new Array[Int](200)
    var global_register: Array[Int] = new Array[Int](datasize)
+     
+   def load(f: String): List[Int]= {
+     
+     val fp = Source.fromFile(f)
+     
+     def lex(l: List[String]): List[Int] = l match {
+       case Nil => Nil
+       case head :: rest => {
+         head match {
+           case "ICONST" => ICONST :: lex(rest)
+           case "5" => 5 ::  lex(rest)
+           case "PRINT" => PRINT :: lex(rest)
+           case "HALT" => HALT :: lex(rest)
+           case _ => lex(rest)
+         }
+       }
+     }
+     
+     def read(s: Source): List[String] = {
+       fp.getLines.toList.map(_.split(",").map(_.trim)).flatten
+     }
+     
+     val s = read(fp)
+     
+     lex(s)
+   }
    
-   def exec(): Unit = {
+   def exec(program: List[Int]): Unit = {
      cpu(program, main, -1, stack)
    }
    
