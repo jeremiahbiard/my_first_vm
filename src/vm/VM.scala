@@ -23,26 +23,38 @@ class VM(main: Int, datasize: Int) {
      
      val fp = Source.fromFile(f)
      
+     val numPattern = "\\d+".r
+     
      def lex(l: List[String]): List[Int] = l match {
        case Nil => Nil
        case head :: rest => {
          head match {
+           
            case "ICONST" => ICONST :: lex(rest)
-           case "5" => 5 ::  lex(rest)
            case "PRINT" => PRINT :: lex(rest)
-           case "HALT" => HALT :: lex(rest)
-           case _ => lex(rest)
+           case "HALT" => HALT :: lex(rest)   
+           case "LOAD" => LOAD :: lex(rest)
+           case "ILT" => ILT :: lex(rest)
+           case "CALL" => CALL :: lex(rest)
+           case "BRF" => BRF :: lex(rest)
+           case "RET" => RET :: lex(rest)
+           case "ISUB" => ISUB :: lex(rest)
+           case "IMUL" => IMUL :: lex(rest)
+           case _ => {
+             try {
+               Integer.valueOf(head) :: lex(rest) 
+             }
+             catch {
+               case _ : Throwable => lex(rest)
+             }
+           }
          }
        }
      }
      
-     def read(s: Source): List[String] = {
-       fp.getLines.toList.map(_.split(",").map(_.trim)).flatten
-     }
+     def read(s: Source): List[String] = fp.getLines.toList.map(_.split(",").map(_.trim)).flatten
      
-     val s = read(fp)
-     
-     lex(s)
+     lex(read(fp))
    }
    
    def exec(program: List[Int]): Unit = {
