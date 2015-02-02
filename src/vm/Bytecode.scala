@@ -16,6 +16,8 @@ object Bytecode {
   val PRINT:    Short = 14
   val POP:      Short = 15
   val HALT:     Short = 16
+  val CALL:     Short = 17
+  val RET:      Short = 18
   
   class Instruction(name: String, n_args: Int) {
     val n: Int = n_args
@@ -27,9 +29,9 @@ object Bytecode {
   
   val opcodes: List[Instruction] = {
     List(null,
-    new Instruction("iadd", 2),
-    new Instruction("isub", 2),
-    new Instruction("imul", 2),
+    new Instruction("iadd"),
+    new Instruction("isub"),
+    new Instruction("imul"),
     new Instruction("ilt"),
     new Instruction("ieq"),
     new Instruction("br", 1),
@@ -42,7 +44,9 @@ object Bytecode {
     new Instruction("gstore", 1),
     new Instruction("print"),
     new Instruction("pop"),
-    new Instruction("halt")
+    new Instruction("halt"),
+    new Instruction("call", 2),
+    new Instruction("ret")
     )
   }
   
